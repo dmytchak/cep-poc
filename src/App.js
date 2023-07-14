@@ -3,43 +3,79 @@ import './style.css';
 
 export default function App() {
   const [accessToken, setAccessToken] = useState(null);
+  const [styleDisplay, setStyleDisplay] = useState('none');
   const [displayIFrame, setDisplayIFrame] = useState(false);
+  const [displayIFrameButton, setDisplayIFrameButton] = useState(null);
+  const [displayHTMLButton, setDisplayIHTMLButton] = useState(null);
   const hiddenIframeRef = useRef(null);
-  const access_token = useState(null);
+  const [listening, setListening] = useState(false);
+  const [eventData, setEventData] = useState(null);
+  const httpFormRef = useRef(null);
 
-  const dispIFrame = () => {
+  const handleWebHook = () => {
+    if (!listening) {
+      //Display requested but we're not listening
+      console.log('Setting Event Source for SSE events');
+      let eventSource = new EventSource(
+        `https://glacial-cliffs-78227-e5b87b59c5df.herokuapp.com/waitFor/11445566`
+      );
+      setListening(true);
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        setEventData(data);
+        console.log('Data: ', data);
+        console.log(`Data for key "${data.key}" updated:`, data.payload);
+        setStyleDisplay('none');
+        setDisplayIFrame('false');
+      };
+
+      eventSource.onerror = (error) => {
+        console.error('EventSource failed:', error);
+        console.log('Closing event Source and resetting page');
+        eventSource.close();
+        setStyleDisplay('none');
+        setDisplayIFrame(false);
+      };
+    }
+  };
+  const handleDisplayIFrameButton = () => {
+    setStyleDisplay('Block');
+    setDisplayIFrame(true);
+    setDisplayIHTMLButton(false);
+
     const param = {
-      CLIENT_SYSTEM_ID: 'cepheid_ecom',
+      CLIENT_SYSTEM_ID: 'abc_manufacturing',
       SECURITY_KEY: '',
       DI_ACCESS_TOKEN: accessToken,
-      MERCHANT_ID: 'HIGHRAD',
-      CARD_TYPE: '',
-      CARD_NUMBER: '        ',
+      MERCHANT_ID: 'aj1205-05',
+      CARD_TYPE: 'MasterCard',
+      CARD_EXPIRY_YEAR: '2025',
+      CARD_NUMBER: '5555444455554442',
       PROCESSOR: 'firstdata',
       TRANSACTION_TYPE: 'Tokenize',
-      REQUEST_ID: '896745',
-      REFERENCE_NUMBER: '896745',
+      REQUEST_ID: '11445566',
+      REFERENCE_NUMBER: '11445566',
       REQUESTOR: 'kaching',
       DATA_LEVEL: '1',
       POST_BACK_URL:
-        'https://pruat.paymentsradius.com/PaymentsRadiusDI/iframeResult.jsp',
-      STRING_URL: 'http%3A%2F%2Fpruat.paymentsradius.com%2F',
-      CALLING_APP: 'EIPP',
+        'https://glacial-cliffs-78227-e5b87b59c5df.herokuapp.com/di-post',
+      STRING_URL: 'http%3A%2F%2Fprtest.paymentsradius.com%2F',
+      CALLING_APP: 'Ecommerce',
       CURRENCY_CODE: 'USD',
-      BILL_TO_AVSCHECK_REQUIRED: 'true',
-      BILL_TO_STREET1: 'addq1',
-      BILL_TO_STREET2: 'asds',
+      BILL_TO_AVSCHECK_REQUIRED: 'FALSE',
+      BILL_TO_STREET1: '1234 Sunny Side St',
+      BILL_TO_STREET2: 'Suite 100',
       BILL_TO_COUNTRY: 'USA',
-      BILL_TO_CITY: 'hyd',
-      BILL_TO_STATE: 'California',
-      BILL_TO_FIRST_NAME: 'VAx MEDICAL CENTER 123',
-      BILL_TO_LAST_NAME: 'DESERT PACIFIC HEALTHCARE NETWORK',
+      BILL_TO_CITY: 'San Diego',
+      BILL_TO_STATE: 'CA',
+      BILL_TO_FIRST_NAME: 'Widgets R Us',
+      BILL_TO_LAST_NAME: 'California Widges Inc.',
       PAYMENT_AMOUNT: '150.00',
-      BILL_TO_POSTAL_CODE: '',
-      IS_CVV_MANDATORY: 'TRUE',
+      BILL_TO_POSTAL_CODE: '12345',
+      IS_CVV_MANDATORY: 'true',
       BILL_TO_COMPANY: 'HIGHRADIUS',
-      BILL_TO_EMAIL: 'generaldist@geinc.com',
-      BILL_TO_PHONE: '332535 23423',
+      BILL_TO_EMAIL: 'billus@widgets.com',
+      BILL_TO_PHONE: '123.456.7890',
       CSS_FILE_NAME: 'TRIFECTA_DI_CSS',
       JS_FILE_NAME: 'TRIFECTA_DI_JS',
       LANGUAGE_CODE: 'en',
@@ -53,7 +89,7 @@ export default function App() {
     form.setAttribute('method', 'post');
     form.setAttribute(
       'action',
-      'https://pruat.paymentsradius.com/PaymentsRadiusDI/v2/checkOut.do'
+      'https://prtest.paymentsradius.com/PaymentsRadiusDI/v2/checkOut.do'
     );
     form.setAttribute('target', 'hiddenIframe');
 
@@ -79,6 +115,8 @@ export default function App() {
       securityKey:
         'Whatever you would like to put to secure the Server Side call',
     });
+
+    handleWebHook();
 
     var xhr = new XMLHttpRequest();
     xhr.withCredentials = true;
@@ -110,18 +148,38 @@ export default function App() {
 
           setAccessToken(jsonResp.accessToken);
           console.log('Returned Payload ' + response);
-          console.log(' Access Token: ' + access_token);
-          setDisplayIFrame(true);
+          setDisplayIFrameButton(true);
+          setDisplayIHTMLButton(true); //Fix Service Worker code first
         }
       }
     };
-
-    setDisplayIFrame(true);
   };
+
+  const handleHtmlButtonClick = () => {
+    event.preventDefault();
+    setDisplayIFrame(false);
+    setDisplayIHTMLButton(true);
+    httpFormRef.current.submit();
+    /*
+    const formData = new FormData(httpFormRef.current);
+    fetch('https://prtest.paymentsradius.com/PaymentsRadiusDI/v2/checkOut.do', {
+      method: 'POST',
+      body: formData,
+    })
+      .then((response) => {
+        console.log( 'Response: ', response);
+      })
+      .catch((error) => {
+        console.log( 'Error: ', error);
+      });
+      */
+  };
+
   return (
     <html>
       <body>
         <form
+          ref={httpFormRef}
           id="modelForm"
           method="post"
           action="https://prtest.paymentsradius.com/PaymentsRadiusDI/v2/checkOut.do"
@@ -131,21 +189,27 @@ export default function App() {
             name="CLIENT_SYSTEM_ID"
             value="abc_manufacturing"
           />
+
+          <input type="hidden" name="PROCESSOR" value="firstdata" />
+          <input type="hidden" name="MERCHANT_ID" value="aj1205-05" />
           <input
             type="hidden"
-            name="DI_ACCESS_TOKEN"
-            value="eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiIzZWQ3OWEzYi03NzA5LTQ2NmUtODM4MS1lMGIyMjU0NDQzMzgiLCJpZGVudGlmaWVyIjoicGF5bWVudHNyYWRpdXMiLCJpYXQiOjE2ODgwNDkzMzQsImV4cCI6MTY4ODA1MjkzNH0._p6sTXpWDShmTIYiruAqluvLFPXI18RIrpDnlhbnHLbgDO4Vc4C8CfQVb8lZ-mDRe5wh-_aVra3RenPB0Mm2wA"
+            name="CLIENT_SYSTEM_ID"
+            value="abc_manufacturing"
           />
+
+          <input type="hidden" name="DI_ACCESS_TOKEN" value={accessToken} />
           <input type="hidden" name="TRANSACTION_TYPE" value="TOKENIZE" />
+          <input type="hidden" name="MERCHANT_ID" value="aj1205-05" />
           <input type="hidden" name="CARD_TYPE" value="" />
-          <input type="hidden" name="CALLING_APP" value="EIPP" />
+          <input type="hidden" name="CALLING_APP" value="Ecommerce" />
           <input type="hidden" name="REQUEST_ID" value="11445566" />
           <input type="hidden" name="REFERENCE_NUMBER" value="11445566" />
           <input type="hidden" name="DATA_LEVEL" value="1" />
           <input
             type="hidden"
             name="POST_BACK_URL"
-            value="https://prtest.paymentsradius.com/PaymentsRadiusDI/multiTokenResult.jsp"
+            value="https://glacial-cliffs-78227-e5b87b59c5df.herokuapp.com/di-post"
           />
           <input type="hidden" name="REQUESTOR" value="IframeTesting" />
           <input
@@ -160,28 +224,53 @@ export default function App() {
           <input type="hidden" name="BILL_TO_COUNTRY" value="USA" />
           <input type="hidden" name="BILL_TO_POSTAL_CODE" value="94043" />
           <input type="hidden" name="PAYMENT_AMOUNT" value="100" />
-          <input type="hidden" name="IS_MULTI_TOKEN" Value="FALSE" />
           <input type="hidden" name="PROCESSOR" Value="firstdata" />
-          <input type="submit" name="TOKENIZE" value="TOKENIZE" />
         </form>
       </body>
 
       <div>
         <h1>Welcome to the Sandbox</h1>
         <p>Press the 'Get Access Token' button to generate an access token</p>
-        {displayIFrame && (
+        {displayIFrameButton && (
           <p>Then press the Display iFrame button to render the HRC iFrame</p>
         )}
-        <button onClick={() => getAccess()}>Get Access Token</button>
-        {displayIFrame && (
-          <button onClick={() => dispIFrame()}>Display iFrame</button>
+        <button
+          onClick={() => {
+            getAccess();
+          }}
+        >
+          {' '}
+          Get Access Token{' '}
+        </button>
+
+        {displayHTMLButton && (
+          <button onClick={handleHtmlButtonClick}>HTML Demo</button>
+        )}
+        {displayIFrameButton && (
+          <button onClick={handleDisplayIFrameButton}>iFrame Demo</button>
+        )}
+
+        {eventData && (
+          <div>
+            <h2>Event Data:</h2>
+            <p>
+              <b>Key:</b> {eventData.key}
+              <br />
+              <b>Token:</b> {eventData.payload.cardToken}
+              <br />
+              <b>TransId:</b> {eventData.payload.transactionId}
+            </p>
+            <p>
+              <b>Payload:</b> {JSON.stringify(eventData.payload)}
+            </p>
+          </div>
         )}
 
         <iframe
           ref={hiddenIframeRef}
           id="hiddenIframe"
           name="hiddenIframe"
-          style={{ width: '800px', height: '600px' }}
+          style={{ display: styleDisplay, width: '800px', height: '600px' }}
           title="Hidden Iframe"
         />
       </div>
