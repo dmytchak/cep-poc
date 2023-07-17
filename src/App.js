@@ -12,6 +12,61 @@ export default function App() {
   const [eventData, setEventData] = useState(null);
   const httpFormRef = useRef(null);
 
+  const [formFields, setFormFields] = useState({
+    inputCardType: 'MasterCard',
+    cardNo1: '5555544445555544442',
+    cardExpMonth: '01',
+    cardExpYear: '35',
+    cvvNumber: '111',
+    inputBillToFirstName: 'David',
+    inputBillToLastName: 'Mytchak',
+    inputBillToStreet1: '1234 Streetie Street',
+    inputBillToCity: 'Houston',
+    inputBillToCountry: 'USA',
+    inputBillToState: 'TX',
+    CLIENT_SYSTEM_ID: 'abc_manufacturing',
+    PROCESSOR: 'firstdata',
+    MERCHANT_ID: 'aj1205-05',
+    TRANSACTION_TYPE: 'TOKENIZE',
+  });
+
+  const handleSubmit = (event) => {
+    event.preventDefault();
+
+    const url =
+      //   'https://prtest.paymentsradius.com/PaymentsRadiusDI/v2/processPayment.do';
+      'https://prtest.paymentsradius.com/PaymentsRadiusDI/v2/checkOut.do';
+
+    const formData = new FormData();
+
+    for (const name in formFields) {
+      formData.append(name, formFields[name]);
+    }
+
+    //Append the AccessCode
+    formData.append('DI_ACCESS_TOKEN', { accessToken });
+    formData.append('REQUEST_ID', '11445566');
+
+    fetch(url, {
+      method: 'POST',
+      body: formData,
+      mode: 'no-cors',
+    })
+      .then((response) => {
+        if (response.type == 'opaque') {
+          console.log('RESPONSE: ', response);
+        } else if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        // further handling on successful submission
+      })
+      .catch((error) => {
+        console.error(
+          'There was a problem with the fetch operation: ' + error.message
+        );
+      });
+  };
+
   const handleWebHook = () => {
     if (!listening) {
       //Display requested but we're not listening
@@ -243,9 +298,7 @@ export default function App() {
           Get Access Token{' '}
         </button>
 
-        {displayHTMLButton && (
-          <button onClick={handleHtmlButtonClick}>HTML Demo</button>
-        )}
+        {displayHTMLButton && <button onClick={handleSubmit}>HTML Demo</button>}
         {displayIFrameButton && (
           <button onClick={handleDisplayIFrameButton}>iFrame Demo</button>
         )}
