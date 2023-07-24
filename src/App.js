@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
+import axios from 'axios';
 import './style.css';
 
 export default function App() {
@@ -13,7 +14,7 @@ export default function App() {
   const httpFormRef = useRef(null);
 
   const [formFields, setFormFields] = useState({
-    inputCardType: 'MasterCard',
+    /*inputCardType: 'MasterCard',
     cardNo1: '5555544445555544442',
     cardExpMonth: '01',
     cardExpYear: '35',
@@ -24,10 +25,43 @@ export default function App() {
     inputBillToCity: 'Houston',
     inputBillToCountry: 'USA',
     inputBillToState: 'TX',
+    */
     CLIENT_SYSTEM_ID: 'abc_manufacturing',
-    PROCESSOR: 'firstdata',
+    SECURITY_KEY: '',
     MERCHANT_ID: 'aj1205-05',
-    TRANSACTION_TYPE: 'TOKENIZE',
+    CARD_TYPE: 'MasterCard',
+    CARD_EXPIRY_YEAR: '2025',
+    CARD_NUMBER: '5555444455554442',
+    PROCESSOR: 'firstdata',
+    TRANSACTION_TYPE: 'Authorize',
+
+    REFERENCE_NUMBER: '11445566',
+    REQUESTOR: 'kaching',
+    DATA_LEVEL: '1',
+    POST_BACK_URL:
+      'https://glacial-cliffs-78227-e5b87b59c5df.herokuapp.com/di-post',
+    STRING_URL: 'http%3A%2F%2Fprtest.paymentsradius.com%2F',
+    CALLING_APP: 'Ecommerce',
+    CURRENCY_CODE: 'USD',
+    BILL_TO_AVSCHECK_REQUIRED: 'FALSE',
+    BILL_TO_STREET1: '1234 Sunny Side St',
+    BILL_TO_STREET2: 'Suite 100',
+    BILL_TO_COUNTRY: 'USA',
+    BILL_TO_CITY: 'San Diego',
+    BILL_TO_STATE: 'CA',
+    BILL_TO_FIRST_NAME: 'Widgets R Us',
+    BILL_TO_LAST_NAME: 'California Widges Inc.',
+    PAYMENT_AMOUNT: '150.00',
+    BILL_TO_POSTAL_CODE: '12345',
+    IS_CVV_MANDATORY: 'true',
+    BILL_TO_COMPANY: 'HIGHRADIUS',
+    BILL_TO_EMAIL: 'billus@widgets.com',
+    BILL_TO_PHONE: '123.456.7890',
+    CSS_FILE_NAME: 'TRIFECTA_DI_CSS',
+    JS_FILE_NAME: 'TRIFECTA_DI_JS',
+    LANGUAGE_CODE: 'en',
+    IS_PRE_POPULATE_DI: '',
+    ENABLE_KEYPAD_DI: 'false',
   });
 
   const handleSubmit = (event) => {
@@ -44,14 +78,29 @@ export default function App() {
     }
 
     //Append the AccessCode
-    formData.append('DI_ACCESS_TOKEN', { accessToken });
+    formData.append('DI_ACCESS_TOKEN', accessToken);
     formData.append('REQUEST_ID', '11445566');
 
-    fetch(url, {
+    /*fetch(url, {
       method: 'POST',
       body: formData,
       mode: 'no-cors',
-    })
+    })*/
+
+    console.log('data: ', formData);
+
+    var instance = axios.create();
+    instance.defaults.headers.common = {};
+    instance.withCredentials = true;
+    instance
+      .post(url, new URLSearchParams(formData), {
+        withCredentials: true,
+        headers: {
+          'content-type': 'application/x-www-form-urlencoded',
+          accept:
+            'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8',
+        },
+      })
       .then((response) => {
         if (response.type == 'opaque') {
           console.log('RESPONSE: ', response);
