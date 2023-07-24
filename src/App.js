@@ -14,26 +14,14 @@ export default function App() {
   const httpFormRef = useRef(null);
 
   const [formFields, setFormFields] = useState({
-    /*inputCardType: 'MasterCard',
-    cardNo1: '5555544445555544442',
-    cardExpMonth: '01',
-    cardExpYear: '35',
-    cvvNumber: '111',
-    inputBillToFirstName: 'David',
-    inputBillToLastName: 'Mytchak',
-    inputBillToStreet1: '1234 Streetie Street',
-    inputBillToCity: 'Houston',
-    inputBillToCountry: 'USA',
-    inputBillToState: 'TX',
-    */
     CLIENT_SYSTEM_ID: 'abc_manufacturing',
     SECURITY_KEY: '',
-    MERCHANT_ID: 'aj1205-05',
-    CARD_TYPE: 'MasterCard',
-    CARD_EXPIRY_YEAR: '2025',
-    CARD_NUMBER: '5555444455554442',
-    PROCESSOR: 'firstdata',
-    TRANSACTION_TYPE: 'Authorize',
+    MERCHANT_ID: 'TESTHIGHRADIUS01',
+    CARD_TYPE: '',
+    CARD_EXPIRY_YEAR: '',
+    CARD_NUMBER: '',
+    PROCESSOR: 'spring',
+    TRANSACTION_TYPE: 'Tokenize',
 
     REFERENCE_NUMBER: '11445566',
     REQUESTOR: 'kaching',
@@ -57,11 +45,12 @@ export default function App() {
     BILL_TO_COMPANY: 'HIGHRADIUS',
     BILL_TO_EMAIL: 'billus@widgets.com',
     BILL_TO_PHONE: '123.456.7890',
-    CSS_FILE_NAME: 'TRIFECTA_DI_CSS',
-    JS_FILE_NAME: 'TRIFECTA_DI_JS',
+    CSS_FILE_NAME: 'TRIFECTA_DI_CSSxx',
+    //JS_FILE_NAME: 'TRIFECTA_DI_JS',
     LANGUAGE_CODE: 'en',
-    IS_PRE_POPULATE_DI: '',
+    IS_PRE_POPULATE_DI: 'True',
     ENABLE_KEYPAD_DI: 'false',
+    JSON_RESPONSE_REQUIRED: 'true',
   });
 
   const handleSubmit = (event) => {
